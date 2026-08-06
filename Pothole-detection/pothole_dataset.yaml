@@ -1,0 +1,16 @@
+# pothole_dataset.yaml
+
+# Define the root path to your data directory
+path: ./data_merged 
+
+# Define the image folders
+train: images/train
+val: images/val
+test: images/test
+
+# --- Class Info ---
+# Number of classes
+nc: 1
+
+# Class names
+names: ['pothole']

@@ -1,0 +1,18 @@
+# Road Pothole Detection System Requirements
+# IBM Internship | Group 74 | AIML74 | UPES Dehradun
+
+ultralytics
+torch
+torchvision
+torchaudio
+opencv-python
+numpy
+matplotlib
+pandas
+pyyaml
+pillow
+tqdm
+scipy
+onnx
+onnxruntime
+onnxslim

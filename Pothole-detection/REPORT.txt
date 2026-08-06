@@ -1,0 +1,76 @@
+================================================================================
+           ROAD POTHOLE DETECTION AND SEVERITY ANALYSIS SYSTEM
+       IBM Internship | Group 74 AIML (AIML74) | UPES Dehradun
+================================================================================
+
+1. MODEL SUMMARY
+This system implements real-time automated road pothole detection, dynamic 
+centimeter-level size estimation, and driver warning alert overlays. It is
+based on the attention-centric YOLOv12-Nano (YOLOv12n) architecture, which
+implements Area Attention (A2) and Reversed ELAN (R-ELAN) modules for high-speed,
+accurate inference on consumer-grade hardware.
+
+- Fused Layer Count : 159 layers
+- Parameter Count   : 2,556,923 parameters
+- Computation Load  : 6.3 GFLOPs
+
+2. MERGED DATASET DESCRIPTION
+To expand the model's generalized knowledge, we developed a remapping pipeline
+and merged two distinct sources:
+- Baseline Kaggle Pothole Dataset: 665 PNG images (flat annotations).
+- Filtered RDD2022 Dataset: 100 images containing D40 anomalies (raw class 3),
+  remapped to index 0 (pothole) and prefixed to avoid file collisions.
+
+Merged Dataset Split & Balance statistics:
+- Total Images: 765
+- Total Annotations: 2,024 potholes
+- Train Split : 535 images (69.9%) | 1,386 pothole instances (Avg: 2.59/img)
+- Val Split   : 153 images (20.0%) |   438 pothole instances (Avg: 2.86/img)
+- Test Split  :  77 images (10.1%) |   200 pothole instances (Avg: 2.60/img)
+
+3. INTENSIVE MODEL BENCHMARKS (On Validation Split)
+We evaluated the baseline model (trained for 25 epochs) against the newly trained
+merged dataset model (trained for 2 epochs on CPU for pipeline verification):
+
+Metric                    | Old Model (25 Epochs) | New Model (Merged 2e)
+----------------------------------------------------------------------
+Weights Path              | runs/detect/.../best.pt| runs/detect/.../best.pt
+Precision                 | 0.8804                 | 0.6443              
+Recall                    | 0.8105                 | 0.5342              
+mAP@0.5                   | 0.9123                 | 0.5827              
+mAP@0.5:0.95              | 0.6402                 | 0.3017              
+Avg CPU Latency (ms)      | 281.43 ms              | 279.53 ms            
+Throughput (FPS)          | 3.55 FPS               | 3.58 FPS            
+----------------------------------------------------------------------
+
+AUTOMATED SELECTION RESULT:
+The OLD MODEL (25 Epochs) has been selected as the primary weights file due to
+its superior accuracy (mAP50 = 0.9123 vs. 0.5827). The system has automatically
+configured the main inference script defaults to use this best-performing model.
+
+4. SYSTEM COMPONENT SPECS
+
+A. Geometric Size Estimation
+Physical dimensions are calculated using flat-ground perspective geometry:
+- Camera Height (H)   : 1.3 meters (configurable)
+- Focal Length (f)    : 800 pixels (configurable)
+- Tilt Angle (theta)  : 18.0 degrees down (configurable)
+Distance is computed as D = H / tan(theta + phi_y), and physical width is
+derived as W = (w_px * D) / f.
+
+B. Multi-Factor Severity Scoring
+Severity is evaluated using a weighted image-space scoring formula:
+  Score = 0.60 * Size_Factor + 0.20 * Confidence_Factor + 0.20 * Aspect_Factor
+- Minor    : Score < 0.40
+- Moderate : 0.40 <= Score < 0.70
+- Severe   : Score >= 0.70
+
+C. Analytics Outputs
+Every execution generates formatted report files inside outputs/analysis/:
+- CSV  : Flat tabular records for spreadsheet logging.
+- JSON : Structured nested files for database integrations.
+- TXT  : Human-readable analytical summaries.
+
+================================================================================
+Generated automatically by Antigravity Benchmarking & Inference Runner.
+================================================================================

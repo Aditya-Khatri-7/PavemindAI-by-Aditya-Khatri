@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Node & Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# System scratch
+scratch/
+
+# Large media & model files (too big for GitHub)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.pt
+*.onnx
+*.pth
+*.weights
+
+# Output folders
+**/outputs/
+**/runs/
+
+# Dataset images & model results (too large for GitHub)
+Pothole-detection/data/
+Pothole-detection/data_merged/
+Pothole-detection/yolo_comprehensive_results/

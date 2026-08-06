@@ -1,0 +1,23 @@
+[
+    {
+        "frame": 0,
+        "track_id": null,
+        "severity": "SEVERE",
+        "width_cm": 132.8,
+        "height_cm": 177.4,
+        "confidence": 0.8509737253189087,
+        "bbox": [
+            639,
+            629,
+            1440,
+            932
+        ],
+        "distance_m": 1.32,
+        "x": 1039,
+        "y": 780,
+        "lat": null,
+        "lon": null,
+        "_id": "6a5c7cfa592b5f55a268b020",
+        "scan_id": "6a5c7b102dca87ab1040fa23"
+    }
+]

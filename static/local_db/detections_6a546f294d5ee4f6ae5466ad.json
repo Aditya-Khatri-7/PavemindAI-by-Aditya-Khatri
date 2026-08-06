@@ -1,0 +1,44 @@
+[
+    {
+        "frame": 0,
+        "track_id": null,
+        "severity": "MINOR",
+        "width_cm": 9.6,
+        "height_cm": 31.8,
+        "confidence": 0.4717130959033966,
+        "bbox": [
+            208,
+            598,
+            245,
+            648
+        ],
+        "distance_m": 2.07,
+        "x": 226,
+        "y": 623,
+        "lat": 30.39093,
+        "lon": 77.967379,
+        "_id": "6a546f294d5ee4f6ae5466ae",
+        "scan_id": "6a546f294d5ee4f6ae5466ad"
+    },
+    {
+        "frame": 0,
+        "track_id": null,
+        "severity": "MINOR",
+        "width_cm": 10.2,
+        "height_cm": 16.7,
+        "confidence": 0.375663161277771,
+        "bbox": [
+            299,
+            590,
+            335,
+            614
+        ],
+        "distance_m": 2.27,
+        "x": 317,
+        "y": 602,
+        "lat": 30.39093,
+        "lon": 77.967379,
+        "_id": "6a546f294d5ee4f6ae5466af",
+        "scan_id": "6a546f294d5ee4f6ae5466ad"
+    }
+]
