@@ -10,10 +10,7 @@ from pathlib import Path
 # Load environment variables
 load_dotenv()
 
-MONGODB_URI = os.getenv(
-    "MONGODB_URI",
-    "mongodb://projectsbag7_db_user:wtiP8Fyi09R8aaWj@ac-n8utjtb-shard-00-00.upsjqy7.mongodb.net:27017,ac-n8utjtb-shard-00-01.upsjqy7.mongodb.net:27017,ac-n8utjtb-shard-00-02.upsjqy7.mongodb.net:27017/?ssl=true&replicaSet=atlas-o8nsoi-shard-0&authSource=admin&appName=auth-cluster"
-)
+MONGODB_URI = os.getenv("MONGODB_URI")  # Set in backend/.env — never hardcode credentials
 
 # Configuration for local fallback
 BASE_DIR = Path(__file__).resolve().parent
