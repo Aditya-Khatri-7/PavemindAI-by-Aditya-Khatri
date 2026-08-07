@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PavemindAI — Project Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #070b14;
+    --surface: #0e1524;
+    --surface-2: #141d30;
+    --border: #1e2a42;
+    --border-bright: #2d3d5c;
+    --text: #e6edf7;
+    --text-dim: #8b9cb8;
+    --text-faint: #5a6c88;
+    --blue: #4d94ff;
+    --violet: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0 0 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,11,20,.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    margin-bottom: 40px;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; letter-spacing: -.02em; }
+  .brand .logo {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--blue), var(--violet));
+    display: grid; place-items: center; font-size: 15px;
+  }
+
+  /* ── MODE SWITCH ── */
+  .switch-group { display: flex; align-items: center; gap: 12px; }
+  .switch {
+    display: flex; background: var(--surface-2);
+    border: 1px solid var(--border-bright); border-radius: 10px; padding: 3px;
+  }
+  .switch button {
+    font: inherit; font-size: .8rem; font-weight: 700;
+    padding: 7px 16px; border: 0; border-radius: 7px;
+    background: transparent; color: var(--text-faint);
+    cursor: pointer; transition: all .18s; white-space: nowrap;
+  }
+  .switch button:hover { color: var(--text-dim); }
+  .switch button.on { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(77,148,255,.3); }
+  .switch button.on.solo { background: var(--violet); box-shadow: 0 2px 8px rgba(167,139,250,.3); }
+
+  .mode-note {
+    font-size: .72rem; color: var(--text-faint);
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── MODE BANNER ── */
+  .banner {
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 32px;
+    display: flex; align-items: flex-start; gap: 12px; font-size: .87rem;
+  }
+  .banner .ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .banner.group { background: rgba(77,148,255,.08); border: 1px solid rgba(77,148,255,.28); color: #a8cbff; }
+  .banner.solo  { background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.28); color: #cbb8fd; }
+  .banner strong { color: #fff; }
+
+  /* ── HEADER ── */
+  header.hero { margin-bottom: 36px; }
+  .kicker {
+    display: inline-block; font-size: .68rem; font-weight: 800; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--text-faint);
+    border: 1px solid var(--border-bright); border-radius: 20px; padding: 4px 13px; margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -.035em;
+    line-height: 1.1; margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 20%, var(--blue) 60%, var(--violet));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .tagline { font-size: 1.05rem; color: var(--text-dim); max-width: 60ch; }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 40px; scroll-margin-top: 90px; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .sec-num { font: 700 .72rem var(--mono); color: var(--blue); letter-spacing: .1em; }
+  .solo-mode .sec-num { color: var(--violet); }
+  h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -.02em; }
+  .sec-sub { font-size: .8rem; color: var(--text-faint); margin-left: auto; }
+
+  h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -.01em; }
+  p { color: var(--text-dim); font-size: .92rem; }
+  p + p { margin-top: 10px; }
+
+  /* ── CARDS / GRID ── */
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--border-bright); }
+  .card.accent { border-left: 3px solid var(--blue); }
+  .solo-mode .card.accent { border-left-color: var(--violet); }
+
+  .label {
+    font-size: .64rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 10px;
+  }
+
+  /* ── STATS ── */
+  .stat { text-align: center; }
+  .stat .v { font: 800 1.9rem/1.1 var(--mono); color: var(--blue); letter-spacing: -.03em; }
+  .solo-mode .stat .v { color: var(--violet); }
+  .stat .v.green { color: var(--green); }
+  .stat .k { font-size: .74rem; color: var(--text-faint); margin-top: 6px; }
+
+  /* ── PILLS ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--surface-2); border: 1px solid var(--border-bright);
+    border-radius: 7px; padding: 5px 11px; font-size: .78rem; font-weight: 600;
+    color: var(--text-dim); margin: 3px 3px 3px 0;
+  }
+  .pill.hi { border-color: var(--blue); color: #a8cbff; background: rgba(77,148,255,.1); }
+
+  /* ── LISTS ── */
+  ul.clean { list-style: none; }
+  ul.clean li {
+    position: relative; padding-left: 20px; margin-bottom: 9px;
+    font-size: .89rem; color: var(--text-dim);
+  }
+  ul.clean li::before {
+    content: '▸'; position: absolute; left: 0; top: 0; color: var(--blue); font-size: .8rem;
+  }
+  .solo-mode ul.clean li::before { color: var(--violet); }
+  ul.clean li strong { color: var(--text); font-weight: 600; }
+
+  ol.steps { list-style: none; counter-reset: s; }
+  ol.steps li {
+    counter-increment: s; position: relative; padding-left: 38px; margin-bottom: 16px;
+    font-size: .89rem; color: var(--text-dim);
+  }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -1px;
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--surface-2); border: 1px solid var(--border-bright);
+    display: grid; place-items: center;
+    font: 700 .78rem var(--mono); color: var(--blue);
+  }
+  .solo-mode ol.steps li::before { color: var(--violet); }
+  ol.steps li strong { color: var(--text); display: block; margin-bottom: 3px; font-weight: 650; }
+
+  /* ── CODE / MATH ── */
+  .code {
+    background: #05080f; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+    font: .84rem/1.65 var(--mono); color: #b8c8e0;
+    overflow-x: auto; white-space: pre;
+  }
+  .code .c { color: var(--text-faint); }
+  .code .n { color: var(--amber); }
+  .code .k { color: var(--violet); }
+  .code .s { color: var(--green); }
+
+  .formula {
+    background: linear-gradient(135deg, rgba(167,139,250,.07), rgba(77,148,255,.05));
+    border: 1px solid var(--border-bright); border-left: 3px solid var(--violet);
+    border-radius: 10px; padding: 16px 18px; margin: 14px 0;
+  }
+  .formula .eq { font: 600 .95rem var(--mono); color: #d9c9ff; margin-bottom: 8px; }
+  .formula .where { font-size: .78rem; color: var(--text-faint); line-height: 1.7; }
+  .formula .where b { color: var(--text-dim); font-family: var(--mono); font-weight: 600; }
+
+  /* ── FLOW ── */
+  .flow { display: flex; align-items: stretch; gap: 0; overflow-x: auto; padding: 4px 0 10px; }
+  .fbox {
+    flex: 1 0 auto; min-width: 108px; text-align: center;
+    background: var(--surface-2); border: 1px solid var(--border-bright);
+    border-radius: 10px; padding: 13px 10px;
+  }
+  .fbox .i { font-size: 20px; display: block; margin-bottom: 5px; }
+  .fbox .t { font-size: .74rem; font-weight: 650; color: var(--text-dim); line-height: 1.3; }
+  .farrow { display: grid; place-items: center; padding: 0 7px; color: var(--border-bright); font-size: 15px; flex-shrink: 0; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th {
+    text-align: left; font-size: .66rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-faint);
+    padding: 9px 12px; border-bottom: 1px solid var(--border-bright);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-dim); }
+  tr:last-child td { border-bottom: 0; }
+  td.m { font-family: var(--mono); font-size: .82rem; color: var(--text); }
+  td strong { color: var(--text); font-weight: 650; }
+  .tw { overflow-x: auto; }
+
+  /* ── SEVERITY CHIPS ── */
+  .sev { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 7px; font-size: .78rem; font-weight: 700; margin: 3px 4px 3px 0; }
+  .sev.min { background: rgba(52,211,153,.12); color: var(--green); border: 1px solid rgba(52,211,153,.3); }
+  .sev.mod { background: rgba(251,191,36,.12); color: var(--amber); border: 1px solid rgba(251,191,36,.3); }
+  .sev.sev { background: rgba(248,113,113,.12); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
+
+  /* ── Q&A ── */
+  .qa { border-left: 2px solid var(--border-bright); padding-left: 16px; margin-bottom: 20px; }
+  .qa .q { font-size: .88rem; font-weight: 700; color: var(--blue); margin-bottom: 6px; }
+  .solo-mode .qa .q { color: var(--violet); }
+  .qa .a { font-size: .88rem; color: var(--text-dim); }
+  .qa .a strong { color: var(--text); font-weight: 600; }
+
+  /* ── CALLOUT ── */
+  .callout { border-radius: 10px; padding: 14px 16px; margin: 14px 0; font-size: .87rem; display: flex; gap: 11px; }
+  .callout .i { flex-shrink: 0; font-size: 16px; }
+  .callout.warn { background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.28); color: #f7dfa8; }
+  .callout.info { background: rgba(77,148,255,.07); border: 1px solid rgba(77,148,255,.25); color: #b8d4ff; }
+  .callout.crit { background: rgba(248,113,113,.07); border: 1px solid rgba(248,113,113,.3); color: #fcbcbc; }
+  .callout strong { color: #fff; }
+
+  /* ── SCRIPT BOX ── */
+  .script {
+    background: linear-gradient(135deg, #0c1322, #131a2e);
+    border: 1px solid var(--border-bright); border-radius: 14px; padding: 24px; position: relative;
+  }
+  .script::before {
+    content: '“'; position: absolute; top: -6px; left: 14px;
+    font: 700 90px Georgia, serif; color: var(--border-bright); line-height: 1;
+  }
+  .script p { position: relative; z-index: 1; font-size: 1rem; color: #c3d4ec; line-height: 1.75; }
+  .script p strong { color: #fff; font-weight: 650; }
+  .script .cue { font-size: .72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .12em; font-weight: 800; margin-top: 14px; }
+
+  /* ── MODE VISIBILITY ── */
+  .solo-only { display: none; }
+  .solo-mode .solo-only { display: block; }
+  .solo-mode .group-only { display: none; }
+  .solo-mode section.solo-only { display: block; }
+  .solo-mode tr.solo-only { display: table-row; }
+  .solo-mode li.solo-only { display: list-item; }
+  .solo-mode span.solo-only, .solo-mode .pill.solo-only { display: inline-flex; }
+
+  footer { margin-top: 50px; padding-top: 24px; border-top: 1px solid var(--border); font-size: .8rem; color: var(--text-faint); text-align: center; }
+
+  @media print { .topbar { position: static; } .switch-group { display: none; } }
+  @media (max-width: 640px) {
+    .topbar-inner { justify-content: center; }
+    .sec-sub { display: none; }
+  }
+</style>
+</head>
+<body id="body" class="group-mode">
+
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="logo">🛣️</span> PavemindAI</div>
+    <div class="switch-group">
+      <span class="mode-note" id="modeNote">🔒 Safe for group demo</span>
+      <div class="switch">
+        <button id="btnGroup" class="on" onclick="setMode('group')">👥 Group Demo</button>
+        <button id="btnSolo" onclick="setMode('solo')">🔬 Solo / Research</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ BANNERS ══ -->
+  <div class="banner group group-only">
+    <span class="ico">👥</span>
+    <div><strong>Group Demo Mode.</strong> Surface-level overview only — what the system does, the stack names, and the demo flow. Implementation internals, formulas, model metrics, and research framing are hidden. This is the safe view to have open on screen tomorrow.</div>
+  </div>
+  <div class="banner solo solo-only">
+    <span class="ico">🔬</span>
+    <div><strong>Solo / Research Mode.</strong> Full technical depth — derivations, weighted scoring internals, filter cascade, training results, novelty claims, limitations, and conference paper structure. <strong>Do not screen-share this view.</strong></div>
+  </div>
+
+  <!-- ══ HERO ══ -->
+  <header class="hero">
+    <span class="kicker group-only">IBM Internship · Group 74 · AIML74 · UPES Dehradun</span>
+    <span class="kicker solo-only">Conference Paper — Single Author Track</span>
+    <h1>PavemindAI</h1>
+    <p class="tagline group-only">An AI-powered system that detects potholes from road footage, grades how bad they are, and shows the results on a live dashboard with maps and analytics.</p>
+    <p class="tagline solo-only">Monocular vision pipeline for automated pavement distress detection, metric severity estimation, and municipal repair prioritisation — built end-to-end as a deployable full-stack system.</p>
+  </header>
+
+  <!-- ══ 01 · PITCH ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span><h2>The Pitch</h2>
+      <span class="sec-sub group-only">Say this first</span>
+      <span class="sec-sub solo-only">Abstract framing</span>
+    </div>
+
+    <div class="script group-only">
+      <p>We built <strong>PavemindAI</strong> — a system that watches dashcam footage of a road and automatically finds every pothole in it. For each one it works out how serious it is, marks it on the video, and pushes everything to a web dashboard where you can see the totals, a health score for that road, and a map of where the problems are.</p>
+      <p class="cue">Then open the dashboard and run a live upload →</p>
+    </div>
+
+    <div class="script solo-only">
+      <p>Road maintenance is reactive because <strong>surveying is manual and unquantified</strong>. Existing pothole detectors stop at a bounding box — they tell you <em>where</em>, never <em>how bad</em>, and a box in pixels is not actionable for a works department.</p>
+      <p>PavemindAI closes that gap. It couples a fine-tuned YOLOv12 detector with a <strong>monocular metric-estimation layer</strong> that recovers real-world pothole dimensions in centimetres from a single uncalibrated dashcam, then folds size, depth proxy, shape, confidence and temporal persistence into a <strong>weighted severity score</strong> — which aggregates into a 0–100 <strong>Road Health Index</strong> that a municipality can actually rank roads by.</p>
+      <p class="cue">Contribution = the layer above detection, not the detector</p>
+    </div>
+  </section>
+
+  <!-- ══ 02 · WHAT IT DOES ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span><h2>What It Does</h2>
+      <span class="sec-sub">End-to-end flow</span>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="flow">
+        <div class="fbox"><span class="i">📹</span><span class="t">Upload<br>image / video</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><span class="i">⚡</span><span class="t">FastAPI<br>backend</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><span class="i">🤖</span><span class="t">YOLOv12<br>detection</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><span class="i">📐</span><span class="t">Severity<br>engine</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><span class="i">🗄️</span><span class="t">MongoDB<br>/ JSON</span></div>
+        <div class="farrow">→</div>
+        <div class="fbox"><span class="i">📊</span><span class="t">React<br>dashboard</span></div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card accent">
+        <div class="label">Core capabilities</div>
+        <ul class="clean">
+          <li><strong>Image analysis</strong> — upload a photo, get it back annotated with boxes and severity labels</li>
+          <li><strong>Video processing</strong> — full clip processed frame by frame, re-encoded as a playable MP4</li>
+          <li><strong>Severity grading</strong> — every pothole classed Minor / Moderate / Severe</li>
+          <li><strong>Road Health Score</strong> — a single 0–100 number per scan</li>
+          <li><strong>GPS heatmap</strong> — detections plotted on an interactive map</li>
+          <li><strong>Report export</strong> — one-click ZIP with CSV + JSON + processed media</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="label">Severity classes</div>
+        <div style="margin-bottom:14px">
+          <span class="sev min">🟢 MINOR</span>
+          <span class="sev mod">🟡 MODERATE</span>
+          <span class="sev sev">🔴 SEVERE</span>
+        </div>
+        <p class="group-only">Each class drives a different on-screen alert in the annotated video — from "Road Condition Good" up to "DANGER — Large Pothole Ahead".</p>
+        <div class="solo-only">
+          <p style="margin-bottom:10px">Class boundaries are on <em>estimated physical width</em>, not pixel area — so a distant pothole and a near one of the same true size land in the same class.</p>
+          <table>
+            <tr><td><span class="sev min">MINOR</span></td><td class="m">&lt; 30 cm</td></tr>
+            <tr><td><span class="sev mod">MODERATE</span></td><td class="m">30 – 70 cm</td></tr>
+            <tr><td><span class="sev sev">SEVERE</span></td><td class="m">≥ 70 cm</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 03 · STACK ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span><h2>Tech Stack</h2>
+      <span class="sec-sub group-only">Names only</span>
+      <span class="sec-sub solo-only">With rationale</span>
+    </div>
+
+    <div class="grid g3">
+      <div class="card">
+        <div class="label">🤖 AI / Vision</div>
+        <span class="pill hi">YOLOv12-nano</span><span class="pill">Ultralytics</span><span class="pill">ByteTrack</span><span class="pill">OpenCV</span><span class="pill">NumPy</span>
+        <span class="pill solo-only">Pinhole projection</span>
+      </div>
+      <div class="card">
+        <div class="label">⚡ Backend</div>
+        <span class="pill hi">FastAPI</span><span class="pill">MongoDB Atlas</span><span class="pill">PyMongo</span><span class="pill">imageio + FFmpeg</span>
+        <span class="pill solo-only">BackgroundTasks</span><span class="pill solo-only">JSON fallback store</span>
+      </div>
+      <div class="card">
+        <div class="label">⚛️ Frontend</div>
+        <span class="pill hi">React + Vite</span><span class="pill">Leaflet</span><span class="pill">Recharts</span><span class="pill">Framer Motion</span>
+        <span class="pill solo-only">Redux Toolkit</span>
+      </div>
+    </div>
+
+    <div class="solo-only" style="margin-top:16px">
+      <div class="card">
+        <div class="label">Why these choices — defensible answers</div>
+        <div class="tw"><table>
+          <thead><tr><th>Choice</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td><strong>YOLOv12-n</strong></td><td>Single-pass detector; nano variant keeps inference light enough for frame-by-frame video on CPU. Accuracy/latency trade sits where a dashcam use-case needs it.</td></tr>
+            <tr><td><strong>ByteTrack</strong></td><td>Associates detections across frames so one physical pothole isn't counted 40 times. Handles low-confidence boxes better than plain IoU tracking.</td></tr>
+            <tr><td><strong>FastAPI</strong></td><td>Native <code>BackgroundTasks</code> — video jobs return a scan ID instantly and process off-request. Auto OpenAPI docs came free.</td></tr>
+            <tr><td><strong>imageio + libx264</strong></td><td>OpenCV's default writer produces MP4s browsers won't play. Re-encoding with libx264 / yuv420p makes output streamable in a <code>&lt;video&gt;</code> tag.</td></tr>
+            <tr><td><strong>MongoDB</strong></td><td>Detection records are heterogeneous and nested (bbox arrays, optional GPS). Schema-less fits better than relational here.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 04 · SEVERITY ENGINE — GROUP ══ -->
+  <section class="group-only">
+    <div class="sec-head">
+      <span class="sec-num">04</span><h2>The Severity Engine</h2>
+      <span class="sec-sub">High level</span>
+    </div>
+    <div class="card accent">
+      <p>Detecting a pothole is only half the problem — the system also has to judge <strong>how serious</strong> it is. The severity engine looks at several signals together (how large the pothole is in the real world, its shape, how confident the model is, and how consistently it appears across frames) and combines them into a single score, which becomes the Minor / Moderate / Severe label.</p>
+      <p>Those labels then roll up into a <strong>Road Health Score</strong> out of 100 for the whole scan, so an entire stretch of road can be compared against another at a glance.</p>
+    </div>
+  </section>
+
+  <!-- ══ 04 · SEVERITY ENGINE — SOLO ══ -->
+  <section class="solo-only">
+    <div class="sec-head">
+      <span class="sec-num">04</span><h2>Severity Engine — Full Internals</h2>
+      <span class="sec-sub">Core contribution #1</span>
+    </div>
+
+    <div class="card accent" style="margin-bottom:16px">
+      <h3>Multi-factor weighted scoring</h3>
+      <p>Severity is not thresholded on any single quantity. Five normalised factors, each in [0,1], are linearly combined:</p>
+      <div class="formula">
+        <div class="eq">S = 0.45·f<sub>size</sub> + 0.20·f<sub>depth</sub> + 0.15·f<sub>conf</sub> + 0.10·f<sub>aspect</sub> + 0.10·f<sub>persist</sub></div>
+        <div class="where">
+          <b>f_size</b> — piecewise-linear ramp on estimated physical width (cm)<br>
+          <b>f_depth</b> — same ramp on estimated physical height, used as a depth proxy<br>
+          <b>f_conf</b> — raw YOLO confidence<br>
+          <b>f_aspect</b> — 1.0 inside the ideal w/h band [1.0, 3.0], decaying outside<br>
+          <b>f_persist</b> — min(frames_seen, 15) / 15 via ByteTrack ID history
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Score</th><th>Class</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="m">S ≥ 0.70</td><td><span class="sev sev">SEVERE</span></td><td>Immediate repair priority</td></tr>
+          <tr><td class="m">0.45 ≤ S &lt; 0.70</td><td><span class="sev mod">MODERATE</span></td><td>Scheduled maintenance</td></tr>
+          <tr><td class="m">S &lt; 0.45</td><td><span class="sev min">MINOR</span></td><td>Monitor only</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout info"><span class="i">💡</span><div><strong>Defence for the weights:</strong> physical size dominates at 0.45 because it's the only factor that maps to real-world repair cost. Persistence is low at 0.10 deliberately — it must nudge, never decide, or a slow-moving vehicle would inflate every score.</div></div>
+    </div>
+
+    <div class="card accent" style="margin-bottom:16px">
+      <h3>Monocular metric estimation — the actual novelty</h3>
+      <p>Recovering real-world size from one camera with no stereo pair and no depth sensor. Uses a pinhole model plus a flat-ground assumption, treating the bounding box's bottom edge as the road contact point.</p>
+      <div class="formula">
+        <div class="eq">d = H / tan( θ + (y₂ − c_y)/f )</div>
+        <div class="where">
+          <b>d</b> — ground distance to pothole (m)<br>
+          <b>H</b> = 1.3 m — camera height above road<br>
+          <b>θ</b> = 18° — camera downward tilt from horizon<br>
+          <b>f</b> = 800 px — focal length, rescaled as f·(img_w/640) for other resolutions<br>
+          <b>y₂, c_y</b> — box bottom edge and image vertical centre
+        </div>
+      </div>
+      <div class="formula">
+        <div class="eq">W = w<sub>px</sub> · ( d / cos((x_c − c_x)/f) ) / f</div>
+        <div class="where">
+          Horizontal slant correction — a pothole at the frame edge is further away than one dead centre at the same <b>y</b>, so distance is divided by the cosine of its horizontal angular offset before back-projecting width.
+        </div>
+      </div>
+      <div class="formula">
+        <div class="eq">h<sub>extent</sub> = d(y₁) − d(y₂)</div>
+        <div class="where">
+          Along-road extent from the difference of two ground distances (top vs bottom edge) — this is what stands in for depth, since true depth is unobservable monocularly.
+        </div>
+      </div>
+      <div class="callout warn"><span class="i">⚠️</span><div><strong>Own this limitation before they ask.</strong> Flat-ground planarity, fixed calibration, and no true depth are real constraints. Frame it as: metric estimates are <em>relative and consistent</em>, which is sufficient for ranking roads — absolute millimetre accuracy would need stereo or LiDAR, which is explicitly out of scope for a commodity-dashcam deployment.</div></div>
+    </div>
+
+    <div class="card accent">
+      <h3>Four-stage geometric false-positive cascade</h3>
+      <p>Raw YOLO output on road footage produces predictable false positives — sky patches, tyre marks, tar seams, windshield wipers. Rather than raising the confidence threshold (which kills recall on genuine small potholes), four domain-prior filters run before scoring:</p>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>Filter</th><th>Rule</th><th>Rejects</th></tr></thead>
+        <tbody>
+          <tr><td class="m">1</td><td><strong>Confidence</strong></td><td class="m">conf ≥ 0.15</td><td>Noise floor</td></tr>
+          <tr><td class="m">2</td><td><strong>Horizon</strong></td><td class="m">y₂ ≥ 0.30·H, y₁ ≥ 0.20·H</td><td>Sky, clouds, distant hills</td></tr>
+          <tr><td class="m">3</td><td><strong>Aspect</strong></td><td class="m">0.40 ≤ w/h ≤ 6.0</td><td>Tyre tracks, poles, seams</td></tr>
+          <tr><td class="m">4</td><td><strong>Scale / area</strong></td><td class="m">w≥10px, h≥8px, area≥80px², ≤30% frame</td><td>Speckle noise, wipers</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout info"><span class="i">🎯</span><div><strong>The insight worth stating in the paper:</strong> perspective foreshortening means genuine road potholes are always <em>wide and flat</em> in image space (aspect &gt; 1), while the common false positives are narrow-tall or span the frame. Geometry does the filtering that confidence alone can't.</div></div>
+    </div>
+  </section>
+
+  <!-- ══ 05 · HEALTH SCORE ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span><h2>Road Health Index</h2>
+      <span class="sec-sub group-only">The headline number</span>
+      <span class="sec-sub solo-only">Core contribution #2</span>
+    </div>
+    <div class="card accent">
+      <div class="formula">
+        <div class="eq">Health = 100 − (15·n<sub>severe</sub> + 6·n<sub>moderate</sub> + 2·n<sub>minor</sub>)&nbsp;&nbsp;<span style="color:var(--text-faint)">clamped to [0,100]</span></div>
+        <div class="where solo-only">Weights are deliberately super-linear across classes — one severe pothole (15 pts) outweighs seven minor ones (14 pts). This encodes the maintenance reality that a single deep pothole causes more vehicle damage and liability than many shallow ones, so a road with one severe defect ranks for repair above a road with scattered minor wear.</div>
+      </div>
+      <p class="group-only">Every scan gets one number out of 100. It makes two different roads instantly comparable, which is what a maintenance department actually needs.</p>
+      <div class="solo-only">
+        <p>This is the output that makes the system <em>decision-useful</em> rather than merely descriptive. A detector emits boxes; a works department needs a ranked list. The index is the bridge, and it is the second thing the paper claims.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 06 · ENGINEERING ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span><h2>Engineering Decisions</h2>
+      <span class="sec-sub group-only">Built to not fall over</span>
+      <span class="sec-sub solo-only">Deployability argument</span>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="label">Non-blocking video pipeline</div>
+        <p class="group-only">Long videos process in the background — the page stays responsive and shows a live progress bar instead of freezing.</p>
+        <div class="solo-only">
+          <p>Upload returns a <code>scan_id</code> immediately with status <code>queued</code>; processing runs in a FastAPI BackgroundTask that writes progress every 10 frames. Frontend polls. No request ever holds a connection open for the length of a video.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">Zero-crash database fallback</div>
+        <p class="group-only">If the cloud database is unreachable, the system silently switches to local storage and keeps working.</p>
+        <div class="solo-only">
+          <p>Every DB call is gated on <code>test_db_connection()</code>, which caches a successful ping for 5 s and enforces a 30 s retry cooldown when down — so a dead Atlas cluster costs one 2 s timeout, not one per request. All reads/writes have a mirrored JSON-file implementation.</p>
+        </div>
+      </div>
+      <div class="card solo-only">
+        <div class="label">Track-level severity aggregation</div>
+        <p>Naive per-frame counting inflates totals by the frame count. Detections are grouped by ByteTrack ID and collapsed to one record per physical pothole, with a <strong>max-severity-wins</strong> upgrade policy — if a pothole is ever scored SEVERE in any frame, it stays SEVERE. Conservative by design: under-reporting a hazard is the worse error.</p>
+      </div>
+      <div class="card solo-only">
+        <div class="label">Browser-playable output encoding</div>
+        <p>OpenCV's <code>VideoWriter</code> emits containers most browsers refuse. Output is written through imageio's FFmpeg bridge with <code>libx264</code> / <code>yuv420p</code>, then validated post-write (file exists, non-zero, reopenable) before the scan is marked complete.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 07 · RESULTS (SOLO) ══ -->
+  <section class="solo-only">
+    <div class="sec-head">
+      <span class="sec-num">07</span><h2>Training &amp; Results</h2>
+      <span class="sec-sub">Your real numbers</span>
+    </div>
+
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="card stat"><div class="v green">0.881</div><div class="k">mAP@50</div></div>
+      <div class="card stat"><div class="v">0.617</div><div class="k">mAP@50-95</div></div>
+      <div class="card stat"><div class="v">0.875</div><div class="k">Precision</div></div>
+      <div class="card stat"><div class="v">0.764</div><div class="k">Recall</div></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="label">Final run — yolov12n_pothole_detector5</div>
+        <div class="tw"><table>
+          <tbody>
+            <tr><td>Base weights</td><td class="m">yolov12n.pt</td></tr>
+            <tr><td>Epochs</td><td class="m">25</td></tr>
+            <tr><td>Image size</td><td class="m">640 × 640</td></tr>
+            <tr><td>Batch size</td><td class="m">4</td></tr>
+            <tr><td>Initial LR</td><td class="m">0.01</td></tr>
+            <tr><td>Optimiser</td><td class="m">auto (AdamW)</td></tr>
+            <tr><td>Train / Val split</td><td class="m">535 / 153 images</td></tr>
+            <tr><td>Wall-clock</td><td class="m">~22 min</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="label">Augmentation &amp; ablation</div>
+        <div class="tw"><table>
+          <tbody>
+            <tr><td>Mosaic</td><td class="m">1.0</td></tr>
+            <tr><td>Scale jitter</td><td class="m">0.5</td></tr>
+            <tr><td>Horizontal flip</td><td class="m">0.5</td></tr>
+            <tr><td>Rotation</td><td class="m">0.0 <span style="color:var(--text-faint)">(intentional)</span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout info" style="margin-top:12px"><span class="i">📌</span><div>Rotation is disabled on purpose — the horizon filter and aspect-ratio prior both assume an upright, road-facing camera. Rotating training images would break the geometric assumptions the severity engine depends on. <strong>That's a defensible design link between augmentation and downstream logic — worth a sentence in the paper.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:16px"><span class="i">📊</span><div><strong>Honest read on the numbers.</strong> mAP@50 of 0.881 is strong; recall 0.764 means roughly 1 in 4 potholes is missed, driven by small/distant instances. Say this before a reviewer does, and pair it with the mitigation you already built: the low 0.15 confidence threshold trades precision for recall, and the geometric cascade recovers the precision that costs you.</div></div>
+
+    <div class="callout crit" style="margin-top:12px"><span class="i">🚩</span><div><strong>Gap to close before submission:</strong> the severity engine has no ground-truth validation — you have detector metrics, but no measured accuracy for the cm estimates or the severity classes. Before submitting, hand-measure ~30 real potholes and report mean absolute error on width. That single table converts the strongest contribution from "proposed" to "validated", and it's the first thing a reviewer will look for.</div></div>
+  </section>
+
+  <!-- ══ 08 · PAPER PLAN (SOLO) ══ -->
+  <section class="solo-only">
+    <div class="sec-head">
+      <span class="sec-num">08</span><h2>Conference Paper Plan</h2>
+      <span class="sec-sub">Structure &amp; positioning</span>
+    </div>
+
+    <div class="card accent" style="margin-bottom:16px">
+      <div class="label">Novelty claims — ranked</div>
+      <ol class="steps">
+        <li><strong>Monocular metric severity estimation</strong> Recovering pothole dimensions in centimetres from a single commodity dashcam via pinhole projection under a flat-ground prior — no stereo, no depth sensor, no per-vehicle calibration rig. This is the paper's centre of gravity.</li>
+        <li><strong>Multi-factor weighted severity scoring</strong> Fusing physical size, depth proxy, shape regularity, detector confidence and temporal persistence into one interpretable score — versus the single-threshold approach typical in prior work.</li>
+        <li><strong>Geometry-driven false-positive suppression</strong> A four-stage cascade using perspective priors specific to road scenes, preserving recall at a low confidence threshold where a naive threshold raise would not.</li>
+        <li><strong>Road Health Index</strong> A scan-level 0–100 metric converting detections into a ranked repair priority — the decision-useful output layer.</li>
+        <li><strong>Deployed full-stack reference implementation</strong> Not a notebook. A running system with async processing, persistence, offline degradation and an operator dashboard.</li>
+      </ol>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="label">Suggested section outline</div>
+        <ul class="clean">
+          <li><strong>I. Introduction</strong> — reactive maintenance, the "where but not how bad" gap</li>
+          <li><strong>II. Related Work</strong> — pothole detection (CNN/YOLO era), vibration &amp; accelerometer methods, LiDAR/stereo profiling; position yours as the low-cost monocular middle ground</li>
+          <li><strong>III. Methodology</strong> — A. Detection backbone · B. Geometric filtering · C. Monocular metric estimation · D. Severity fusion · E. Health index</li>
+          <li><strong>IV. System Architecture</strong> — pipeline, async design, persistence</li>
+          <li><strong>V. Experiments</strong> — detector metrics + <em>severity validation table</em></li>
+          <li><strong>VI. Results &amp; Discussion</strong></li>
+          <li><strong>VII. Limitations &amp; Future Work</strong></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="label">Limitations to state yourself</div>
+        <ul class="clean">
+          <li><strong>Flat-ground assumption</strong> — breaks on inclines, banking, crowned roads</li>
+          <li><strong>Fixed calibration</strong> — H and θ hardcoded; different vehicle geometry shifts all estimates</li>
+          <li><strong>No true depth</strong> — along-road extent proxies for depth; a shallow wide patch and a deep one score alike</li>
+          <li><strong>Dataset scale</strong> — 535 training images; generalisation across climates, road materials and lighting is unproven</li>
+          <li><strong>Simulated GPS</strong> — video trajectory is interpolated, not from a real GPS feed</li>
+          <li><strong>Severity unvalidated</strong> — no ground-truth measurement study yet</li>
+        </ul>
+        <div class="callout info"><span class="i">✅</span><div>Naming these yourself reads as rigour and removes them as attack surface in review.</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="label">Future work — the natural next paper</div>
+      <ul class="clean">
+        <li><strong>Auto-calibration</strong> from vanishing-point estimation, removing hardcoded H and θ</li>
+        <li><strong>Monocular depth network</strong> (MiDaS / Depth-Anything) to replace the extent-based depth proxy with real depth</li>
+        <li><strong>Real GPS + IMU fusion</strong> for true geotagging and slope compensation</li>
+        <li><strong>Segmentation head</strong> for pothole area in m² rather than bounding-box approximation</li>
+        <li><strong>Edge deployment</strong> — quantised ONNX/TensorRT on a Jetson-class device for in-vehicle inference</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ══ 09 · DEMO SCRIPT (GROUP) ══ -->
+  <section class="group-only">
+    <div class="sec-head">
+      <span class="sec-num">07</span><h2>Demo Script</h2>
+      <span class="sec-sub">Tomorrow's run order</span>
+    </div>
+    <div class="card">
+      <ol class="steps">
+        <li><strong>Open the dashboard</strong> Land on the analytics view so the totals and health score are already on screen.</li>
+        <li><strong>Upload a single image</strong> Fastest visible win — annotated result with boxes and severity labels comes back in seconds.</li>
+        <li><strong>Point at the severity colours</strong> Green / amber / red, and the alert banner that changes with the worst pothole in frame.</li>
+        <li><strong>Upload a short video</strong> Show the progress bar moving — makes the background-processing point without explaining it.</li>
+        <li><strong>Play the processed video</strong> Boxes tracking across frames, live overlay.</li>
+        <li><strong>Open the map</strong> GPS heatmap of detections.</li>
+        <li><strong>Download a report</strong> Close on the ZIP — CSV, JSON, processed media. Shows it produces something usable, not just a demo.</li>
+      </ol>
+      <div class="callout warn"><span class="i">⏱️</span><div>Pre-upload one image and one video before you present, so you always have a completed scan to fall back on if live processing stalls.</div></div>
+    </div>
+  </section>
+
+  <!-- ══ 10 · Q&A ══ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num group-only">08</span><span class="sec-num solo-only">09</span><h2>Questions You'll Get</h2>
+      <span class="sec-sub group-only">Panel</span>
+      <span class="sec-sub solo-only">Reviewer-level</span>
+    </div>
+
+    <div class="card">
+      <!-- shared -->
+      <div class="qa">
+        <div class="q">Why YOLO and not another detector?</div>
+        <div class="a">Single-pass architecture — one forward pass per frame, which is what makes frame-by-frame video processing viable. The <strong>nano</strong> variant keeps it light enough to run without a dedicated GPU.</div>
+      </div>
+      <div class="qa">
+        <div class="q">How is severity decided?</div>
+        <div class="a group-only">Several signals are combined — the pothole's real-world size, its shape, the model's confidence, and how consistently it appears across frames — into one score that maps to Minor, Moderate or Severe.</div>
+        <div class="a solo-only">Weighted linear fusion of five normalised factors — <strong>0.45</strong> physical size, <strong>0.20</strong> depth proxy, <strong>0.15</strong> confidence, <strong>0.10</strong> aspect regularity, <strong>0.10</strong> temporal persistence — thresholded at <strong>0.70</strong> for SEVERE and <strong>0.45</strong> for MODERATE.</div>
+      </div>
+      <div class="qa">
+        <div class="q">How do you get real-world size from a flat 2D image?</div>
+        <div class="a group-only">Using the camera's known mounting geometry — its height above the road and its downward tilt — the system works backwards from where a pothole sits in the frame to roughly how far away and how wide it is.</div>
+        <div class="a solo-only">Pinhole model with a flat-ground prior. The box's bottom edge is treated as the road contact point, giving ground distance <strong>d = H/tan(θ + (y₂−c_y)/f)</strong> with H=1.3 m, θ=18°, f=800 px. Width back-projects as <strong>w_px·d_slant/f</strong>, with a cosine correction for horizontal angular offset.</div>
+      </div>
+      <div class="qa">
+        <div class="q">What happens if the database goes down?</div>
+        <div class="a">Automatic fallback to local JSON storage — every database operation has a mirrored file-based path.<span class="solo-only"> Connection state is cached (5 s ping TTL, 30 s retry cooldown) so a dead cluster costs one timeout, not one per request.</span></div>
+      </div>
+      <div class="qa">
+        <div class="q">Who would actually use this?</div>
+        <div class="a">Municipal road authorities. Mount dashcams on vehicles already driving their routes — buses, maintenance trucks — and the system produces a ranked list of which roads need repair first, plus a map of where the damage is concentrated.</div>
+      </div>
+
+      <!-- solo only -->
+      <div class="qa solo-only">
+        <div class="q">Why not just use pixel area for severity?</div>
+        <div class="a">Pixel area is distance-dependent — a small pothole close to the camera occupies more pixels than a large one further away, so it inverts the ranking you actually want. Metric estimation is what makes severity comparable across a frame and across scans. <strong>This is the point the whole paper turns on.</strong></div>
+      </div>
+      <div class="qa solo-only">
+        <div class="q">Your recall is 0.764 — you're missing a quarter of them.</div>
+        <div class="a">Correct, and concentrated in small/distant instances. Mitigated two ways: the confidence threshold is deliberately low at <strong>0.15</strong> to favour recall, and the geometric cascade recovers the precision that would otherwise cost. For a prioritisation use-case, missing a minor distant pothole is far cheaper than missing a severe near one — and severe instances are large, which is where recall is strongest.</div>
+      </div>
+      <div class="qa solo-only">
+        <div class="q">How do you avoid counting the same pothole in every frame?</div>
+        <div class="a">ByteTrack assigns persistent IDs across frames. Detections are grouped by track ID and collapsed to one record per physical pothole, with a <strong>max-severity-wins</strong> policy — worst observed classification is retained. Deliberately conservative: under-reporting a hazard is the costlier error.</div>
+      </div>
+      <div class="qa solo-only">
+        <div class="q">Have you validated the centimetre estimates against ground truth?</div>
+        <div class="a"><strong>Answer honestly — not yet.</strong> Say the validation study is in progress: hand-measured widths on ~30 real potholes, reported as mean absolute error. Do not overclaim here; a reviewer will catch it, and "in progress with a defined protocol" reads far better than a vague assertion of accuracy.</div>
+      </div>
+      <div class="qa solo-only">
+        <div class="q">What breaks your flat-ground assumption?</div>
+        <div class="a">Inclines, road banking, crowning, and speed bumps — anything violating planarity introduces systematic distance error, which propagates to width. Bounded in practice because the horizon filter already discards the far field where the error grows worst. Auto-calibration via vanishing-point estimation is the stated fix in future work.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SECURITY (SOLO) ══ -->
+  <section class="solo-only">
+    <div class="sec-head">
+      <span class="sec-num">10</span><h2>Fix Before Publishing</h2>
+      <span class="sec-sub">Blocking issue</span>
+    </div>
+    <div class="callout crit"><span class="i">🔴</span><div><strong>Live MongoDB Atlas credentials are hardcoded in <code>backend/database.py</code> (line 15)</strong> as the fallback default for <code>MONGODB_URI</code>. If this repo goes public — or a paper links to it — that connection string is exposed and the database can be read or wiped by anyone.<br><br>
+    <strong>Do all three:</strong> move the URI to <code>.env</code> (already gitignored) with no hardcoded fallback · <strong>rotate the Atlas password now</strong>, since it has already been committed to git history · confirm <code>.env</code> is not tracked before pushing.</div></div>
+    <div class="callout warn"><span class="i">⚠️</span><div>Also drop <code>tlsAllowInvalidCertificates=True</code> from the client options before this goes anywhere near a paper or a public repo — it disables TLS certificate verification, and a reviewer looking at the code will flag it.</div></div>
+  </section>
+
+  <footer>
+    PavemindAI · Project Dashboard · Toggle modes with the switch above<br>
+    <span style="color:var(--red)">Solo / Research mode contains material not to be screen-shared during the group demo.</span>
+  </footer>
+
+</div>
+
+<script>
+  function setMode(m) {
+    var body = document.getElementById('body');
+    var bg = document.getElementById('btnGroup');
+    var bs = document.getElementById('btnSolo');
+    var note = document.getElementById('modeNote');
+    if (m === 'solo') {
+      body.classList.add('solo-mode'); body.classList.remove('group-mode');
+      bg.classList.remove('on'); bs.classList.add('on','solo');
+      note.innerHTML = '🔬 Full detail — do not share';
+      note.style.color = '#a78bfa';
+    } else {
+      body.classList.remove('solo-mode'); body.classList.add('group-mode');
+      bs.classList.remove('on','solo'); bg.classList.add('on');
+      note.innerHTML = '🔒 Safe for group demo';
+      note.style.color = '';
+    }
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+  // Keyboard shortcut: press G / S
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'g' || e.key === 'G') setMode('group');
+    if (e.key === 's' || e.key === 'S') setMode('solo');
+  });
+</script>
+
+</body>
+</html>
