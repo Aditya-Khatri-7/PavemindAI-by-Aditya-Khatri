@@ -207,6 +207,13 @@ function App() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [activeScanDetail, setActiveScanDetail] = useState(null);
 
+  // Toast notifications
+  const [toast, setToast] = useState(null);
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
   // Image Upload State
   const [imageResults, setImageResults] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -592,9 +599,13 @@ function App() {
           if (activeScanDetail && activeScanDetail.scan._id === id) {
             setActiveScanDetail(null);
           }
+          showToast('Scan deleted successfully', 'success');
+        } else {
+          showToast('Failed to delete scan', 'error');
         }
       } catch (e) {
         console.error(e);
+        showToast('Error deleting scan', 'error');
       }
     }
   };
@@ -617,45 +628,61 @@ function App() {
     }
   };
 
-  const handleRerunScan = async (id, scanType = 'video') => {
+  const handleRerunScan = async (id, scanType = 'video', navigateToTab = true) => {
     try {
       setActiveScanDetail(null);
       if (scanType === 'image') {
-        setUploadingImages(true);
-        setImageResults([]);
-        setActiveTab('image');
-        
+        if (navigateToTab) {
+          setUploadingImages(true);
+          setImageResults([]);
+          setActiveTab('image');
+        } else {
+          showToast('Re-analysing image…', 'info');
+        }
+
         const res = await fetch(`${API_BASE}/api/scans/${id}/rerun`, {
           method: "POST"
         });
         if (res.ok) {
           const result = await res.json();
-          setImageResults([result.data]);
-          setSelectedResultIdx(0);
+          if (navigateToTab) {
+            setImageResults([result.data]);
+            setSelectedResultIdx(0);
+          }
           fetchAnalytics();
           fetchHistory();
+          if (!navigateToTab) showToast('Image re-analysed successfully', 'success');
         } else {
           throw new Error("Failed to rerun image scan");
         }
-        setUploadingImages(false);
+        if (navigateToTab) setUploadingImages(false);
       } else {
-        setVideoScanId(id);
-        setVideoStatus('processing');
-        setVideoProgress(0);
-        setVideoResult(null);
-        setVideoFile(null);
-        setActiveTab('video');
+        if (navigateToTab) {
+          setVideoScanId(id);
+          setVideoStatus('processing');
+          setVideoProgress(0);
+          setVideoResult(null);
+          setVideoFile(null);
+          setActiveTab('video');
+        } else {
+          showToast('Video reprocess queued in background', 'info');
+        }
 
         const res = await fetch(`${API_BASE}/api/scans/${id}/rerun`, {
           method: "POST"
         });
-        
+
         if (!res.ok) {
           throw new Error("Failed to start video scan rerun");
+        }
+        if (!navigateToTab) {
+          fetchHistory();
+          showToast('Video reprocess started', 'success');
         }
       }
     } catch (e) {
       console.error("Failed to rerun scan:", e);
+      showToast('Rerun failed: ' + e.message, 'error');
       if (scanType === 'image') {
         setUploadingImages(false);
       } else {
@@ -730,7 +757,21 @@ function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', gap: 0 }}>
-      
+
+      {/* ─── TOAST NOTIFICATION ─── */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '28px', right: '28px', zIndex: 9999,
+          background: toast.type === 'error' ? 'rgba(239,68,68,0.95)' : toast.type === 'info' ? 'rgba(6,182,212,0.95)' : 'rgba(34,197,94,0.95)',
+          color: '#fff', padding: '12px 20px', borderRadius: '10px',
+          fontSize: '13px', fontWeight: 500, boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+          display: 'flex', alignItems: 'center', gap: '10px', maxWidth: '340px'
+        }}>
+          <span>{toast.type === 'error' ? '✕' : toast.type === 'info' ? 'ℹ' : '✓'}</span>
+          {toast.message}
+        </div>
+      )}
+
       {/* ─── SIDEBAR NAVIGATION (Linear.app Collapsible Style) ─── */}
       <aside className="glass-panel" style={{
         width: sidebarCollapsed ? '70px' : '260px',
@@ -2213,7 +2254,7 @@ function App() {
                               Details
                             </button>
                             <button 
-                              onClick={() => handleRerunScan(scan._id, scan.scan_type)}
+                              onClick={() => handleRerunScan(scan._id, scan.scan_type, false)}
                               className="fintech-btn"
                               title="Rerun Telemetry Scan"
                               style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)', color: 'var(--color-cyan)', padding: '4px 8px', borderRadius: '6px' }}

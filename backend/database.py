@@ -151,10 +151,10 @@ def save_detections(scan_id, detections_list):
     Saves multiple individual pothole detections linked to a scan ID.
     """
     if db_connected:
-        for det in detections_list:
-            det["scan_id"] = ObjectId(scan_id)
-        if detections_list:
-            detections_col.insert_many(detections_list)
+        # Use copies so we don't pollute the caller's dicts with ObjectId fields
+        docs = [{**det, "scan_id": ObjectId(scan_id)} for det in detections_list]
+        if docs:
+            detections_col.insert_many(docs)
     else:
         file_path = _get_detections_file(scan_id)
         serialized_list = []

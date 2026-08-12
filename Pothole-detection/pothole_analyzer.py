@@ -34,18 +34,18 @@ SEVERITY_ENGINE_CONFIG = {
         'persistence': 0.10
     },
     'thresholds': {
-        'severe': 0.70,
-        'moderate': 0.45
+        'severe': 0.58,    # lowered from 0.70 — >=58% score = SEVERE
+        'moderate': 0.35   # lowered from 0.45 — >=35% score = MODERATE
     },
     'limits': {
         'minor_pct': 0.5,     # fallback limits
         'severe_pct': 2.5,
         'ideal_aspect_min': 1.0,
         'ideal_aspect_max': 3.0,
-        'minor_w_cm': 30.0,   # <30cm is minor
-        'severe_w_cm': 70.0,  # >=70cm is severe
-        'minor_h_cm': 15.0,
-        'severe_h_cm': 35.0
+        'minor_w_cm': 20.0,   # <20cm is minor  (was 30cm)
+        'severe_w_cm': 50.0,  # >=50cm is severe (was 70cm)
+        'minor_h_cm': 10.0,   # <10cm is minor   (was 15cm)
+        'severe_h_cm': 25.0   # >=25cm is severe  (was 35cm)
     },
     'filters': {
         'min_confidence': 0.15,       # Reject low-probability detections (changed from 0.25)

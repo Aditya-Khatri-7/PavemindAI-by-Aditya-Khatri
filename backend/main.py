@@ -46,7 +46,13 @@ app = FastAPI(title="Road Pothole Severity Engine API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -92,7 +98,8 @@ SEVERITY_LABELS = {0: "MINOR", 1: "MODERATE", 2: "SEVERE"}
 
 # Health score calculator
 def calculate_road_health(minor_count, moderate_count, severe_count):
-    score = 100 - (15 * severe_count + 6 * moderate_count + 2 * minor_count)
+    # Steeper deductions: severe=-25, moderate=-10, minor=-4
+    score = 100 - (25 * severe_count + 10 * moderate_count + 4 * minor_count)
     return max(0, min(100, score))
 
 
