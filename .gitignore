@@ -37,8 +37,14 @@ scratch/
 # Output folders
 **/outputs/
 **/runs/
+backend/static/uploads/*
+!.gitignore
+
+# Claude/IDE configs
+.claude/
 
 # Dataset images & model results (too large for GitHub)
 Pothole-detection/data/
 Pothole-detection/data_merged/
 Pothole-detection/yolo_comprehensive_results/
+
